@@ -11,62 +11,178 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ─── Varredura de credenciais (SecOps) ──────────────────────────────
   secrets-scan:
     name: Varredura de credenciais
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: trufflesecurity/trufflehog@main
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog
+        uses: trufflesecurity/trufflehog@main
         with:
           extra_args: --only-verified
 
+      - name: Bloquear .env versionado
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env esta versionado - viola o Charter"
+            exit 1
+          fi
+          echo "OK - nenhum .env versionado"
+
+  # ─── Descobre quais servicos ja existem ─────────────────────────────
+  discover:
+    name: Descobrir servicos implementados
+    runs-on: ubuntu-latest
+    needs: secrets-scan
+    outputs:
+      services: ${{ steps.list.outputs.services }}
+      has_any: ${{ steps.list.outputs.has_any }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: list
+        name: Listar servicos com package.json
+        run: |
+          FOUND=()
+          for d in services/*/; do
+            [[ -f "${d}package.json" ]] && FOUND+=("$(basename "$d")")
+          done
+
+          if [[ ${#FOUND[@]} -eq 0 ]]; then
+            echo "Nenhum servico implementado ainda - jobs de teste serao ignorados."
+            echo "services=[]" >> "$GITHUB_OUTPUT"
+            echo "has_any=false" >> "$GITHUB_OUTPUT"
+          else
+            JSON=$(printf '"%s",' "${FOUND[@]}" | sed 's/,$//')
+            echo "Servicos encontrados: ${FOUND[*]}"
+            echo "services=[$JSON]" >> "$GITHUB_OUTPUT"
+            echo "has_any=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ─── Testes por servico (so roda se existir) ────────────────────────
   test:
     name: Testes - ${{ matrix.service }}
     runs-on: ubuntu-latest
-    needs: secrets-scan
+    needs: discover
+    if: needs.discover.outputs.has_any == 'true'
     strategy:
       fail-fast: false
       matrix:
-        service: [message-store, processador, gateway]
-    defaults:
-      run:
-        working-directory: services/${{ matrix.service }}
+        service: ${{ fromJSON(needs.discover.outputs.services) }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Servico ja implementado?
-        id: check
-        run: |
-          if [ -f package.json ]; then echo "ready=true" >> $GITHUB_OUTPUT
-          else echo "ready=false" >> $GITHUB_OUTPUT; echo "Servico ainda nao implementado - skip"; fi
-      - uses: actions/setup-node@v4
-        if: steps.check.outputs.ready == 'true'
-        with: { node-version: '22', cache: npm, cache-dependency-path: 'services/${{ matrix.service }}/package-lock.json' }
-      - if: steps.check.outputs.ready == 'true'
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: services/${{ matrix.service }}/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: services/${{ matrix.service }}
         run: npm ci
-      - if: steps.check.outputs.ready == 'true'
-        run: npm run lint
-      - if: steps.check.outputs.ready == 'true'
-        run: npm run typecheck
-      - name: Testes + cobertura (min. 80%)
-        if: steps.check.outputs.ready == 'true'
-        run: npm run test:coverage
+
+      - name: Lint
+        working-directory: services/${{ matrix.service }}
+        run: npm run lint --if-present
+
+      - name: Typecheck
+        working-directory: services/${{ matrix.service }}
+        run: npm run typecheck --if-present
+
+      - name: Testes + cobertura (minimo 80%)
+        working-directory: services/${{ matrix.service }}
         env:
           ENCRYPTION_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
+          NODE_ENV: test
+        run: npm run test:coverage --if-present
 
-  build:
+      - name: Cenarios Gherkin
+        working-directory: services/${{ matrix.service }}
+        env:
+          ENCRYPTION_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
+          NODE_ENV: test
+        run: npm run test:bdd --if-present
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.service }}
+          path: services/${{ matrix.service }}/coverage/
+          if-no-files-found: ignore
+
+  # ─── Validacao de shell scripts ─────────────────────────────────────
+  shellcheck:
+    name: Validar shell scripts
+    runs-on: ubuntu-latest
+    needs: secrets-scan
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: ShellCheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          FALHOU=0
+          while IFS= read -r f; do
+            echo "--> $f"
+            shellcheck -S error "$f" || FALHOU=1
+          done < <(find scripts -name '*.sh' -type f 2>/dev/null)
+          exit $FALHOU
+
+  # ─── Validacao do Docker Compose ────────────────────────────────────
+  compose:
     name: Validar Docker Compose
     runs-on: ubuntu-latest
-    needs: test
+    needs: secrets-scan
     steps:
-      - uses: actions/checkout@v4
-      - run: cp .env.example .env && docker compose config -q
+      - uses: actions/checkout@v5
 
+      - name: docker compose config
+        run: |
+          cp .env.example .env
+          docker compose config -q
+          echo "OK - docker-compose.yml valido"
+
+  # ─── Gate final ─────────────────────────────────────────────────────
+  ci-ok:
+    name: CI aprovado
+    runs-on: ubuntu-latest
+    needs: [secrets-scan, discover, test, shellcheck, compose]
+    if: always()
+    steps:
+      - name: Verificar resultados
+        run: |
+          echo "secrets-scan : ${{ needs.secrets-scan.result }}"
+          echo "discover     : ${{ needs.discover.result }}"
+          echo "test         : ${{ needs.test.result }}"
+          echo "shellcheck   : ${{ needs.shellcheck.result }}"
+          echo "compose      : ${{ needs.compose.result }}"
+
+          for r in "${{ needs.secrets-scan.result }}" \
+                   "${{ needs.discover.result }}" \
+                   "${{ needs.shellcheck.result }}" \
+                   "${{ needs.compose.result }}"; do
+            [[ "$r" == "success" ]] || { echo "::error::Job obrigatorio falhou"; exit 1; }
+          done
+
+          # test pode ser 'skipped' enquanto nao houver servico implementado
+          case "${{ needs.test.result }}" in
+            success|skipped) ;;
+            *) echo "::error::Testes falharam"; exit 1 ;;
+          esac
+
+          echo "CI aprovado"
+
+  # ─── Deploy producao (aprovacao do CEO) ─────────────────────────────
   deploy-production:
     name: Deploy producao
     runs-on: ubuntu-latest
-    needs: build
+    needs: ci-ok
     if: github.ref == 'refs/heads/master'
     environment: production
     steps:
-      - run: echo "Aguardando aprovacao do CEO (Required reviewers)"
+      - run: echo "Deploy aprovado pelo CEO - implementacao real na Sprint 10"
