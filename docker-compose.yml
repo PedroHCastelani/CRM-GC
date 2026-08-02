@@ -1,0 +1,108 @@
+name: crm-gc
+
+x-node-common: &node-common
+  restart: unless-stopped
+  networks: [crm-internal]
+
+services:
+  evolution-api:
+    image: atendai/evolution-api:v2.1.1
+    container_name: crmgc-evolution
+    restart: unless-stopped
+    networks: [crm-internal]
+    ports: ["127.0.0.1:8080:8080"]
+    environment:
+      SERVER_URL: ${EVOLUTION_SERVER_URL}
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution:${POSTGRES_PASSWORD}@evolution-db:5432/evolution
+      WEBHOOK_GLOBAL_ENABLED: "true"
+      WEBHOOK_GLOBAL_URL: http://message-store:3001/webhook
+      WEBHOOK_GLOBAL_BY_EVENTS: "false"
+      WEBHOOK_EVENTS_MESSAGES_UPSERT: "true"
+      CONFIG_SESSION_PHONE_CLIENT: CRM-GC
+      DEL_INSTANCE: "false"
+      LOG_LEVEL: ERROR
+    volumes: [evolution_instances:/evolution/instances]
+    depends_on:
+      evolution-db: { condition: service_healthy }
+
+  evolution-db:
+    image: postgres:16-alpine
+    container_name: crmgc-evolution-db
+    restart: unless-stopped
+    networks: [crm-internal]
+    environment:
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: evolution
+    volumes: [evolution_db:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evolution"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  message-store:
+    <<: *node-common
+    build: ./services/message-store
+    container_name: crmgc-message-store
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      TZ: America/Sao_Paulo
+      PORT: 3001
+      SQLITE_PATH: /data/crm.db
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes: ["./data:/data"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  processador:
+    <<: *node-common
+    build: ./services/processador
+    container_name: crmgc-processador
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      TZ: America/Sao_Paulo
+      PORT: 3002
+      SQLITE_PATH: /data/crm.db
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      BATCH_CRON: ${BATCH_CRON:-0 2 * * *}
+      AI_PROVIDER: ${AI_PROVIDER:-gemini}
+      AI_MODEL: ${AI_MODEL:-gemini-2.5-flash-lite}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      NOTION_TOKEN: ${NOTION_TOKEN}
+      NOTION_DB_LEADS: ${NOTION_DB_LEADS}
+      RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-4}
+      RETRY_DELAY_MS: ${RETRY_DELAY_MS:-30000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes: ["./data:/data"]
+    depends_on:
+      message-store: { condition: service_healthy }
+
+  gateway:
+    <<: *node-common
+    build: ./services/gateway
+    container_name: crmgc-gateway
+    ports: ["${GATEWAY_BIND:-127.0.0.1}:3000:3000"]
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      TZ: America/Sao_Paulo
+      PORT: 3000
+      PROCESSADOR_URL: http://processador:3002
+      MESSAGE_STORE_URL: http://message-store:3001
+      ALLOWED_IPS: ${ALLOWED_IPS}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on: [processador]
+
+networks:
+  crm-internal: { driver: bridge }
+
+volumes:
+  evolution_instances:
+  evolution_db:
