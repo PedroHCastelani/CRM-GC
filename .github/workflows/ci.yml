@@ -108,7 +108,7 @@ jobs:
       - uses: actions/setup-node@v5
         if: steps.lock.outputs.has == 'true'
         with:
-          node-version: '22'
+          node-version-file: '.nvmrc'
           cache: npm
           cache-dependency-path: services/${{ matrix.service }}/package-lock.json
 
@@ -116,8 +116,7 @@ jobs:
       - uses: actions/setup-node@v5
         if: steps.lock.outputs.has == 'false'
         with:
-          node-version: '22'
-
+          node-version-file: '.nvmrc'
       - name: Instalar dependencias
         working-directory: services/${{ matrix.service }}
         run: |

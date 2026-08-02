@@ -110,3 +110,35 @@ Resolucao (CTO): DT-014 registrada.
   - nova suite tests/unit/integridade.test.ts falha se qualquer arquivo de
     src conter delimitador de heredoc ou marcador de conflito do git
 Status: Resolvido.
+
+## Incidente #004
+Data: 2026-08-02
+Agente que reportou: CEO
+Problema: better-sqlite3@11 nao publica binarios pre-compilados para Node 24
+  no Windows. O ambiente local tinha Node 24.18.1 em vez do Node 22 exigido
+  pelo Blueprint, forcando compilacao via node-gyp, que falhou por ausencia
+  de Python e Visual Studio Build Tools.
+Impacto: apenas ambiente local. O CI (Node 22 / Linux) nao seria afetado.
+Nivel de rollback: Pontual.
+Resolucao (CTO): DT-013 registrada.
+  - .nvmrc com 22.14.0 como fonte unica de verdade
+  - engines >=22 <23 em package.json
+  - .npmrc com engine-strict=true: npm recusa Node incompativel
+  - CI usa node-version-file: .nvmrc, eliminando divergencia local/pipeline
+Causa de processo: a versao do Node exigida pelo Blueprint nao foi pinada no
+  repositorio na Sprint 3.
+Status: Resolvido.
+
+## Incidente #006
+Data: 2026-08-02
+Agente que reportou: CEO
+Problema: o script pin-node-version.sh usava python3 para editar o ci.yml.
+  O ambiente Windows nao possui Python instalado - o alias de execucao do
+  Windows respondeu com mensagem da Microsoft Store e o set -euo pipefail
+  abortou o script em estado parcial.
+Impacto: script de correcao interrompido; branch criada sem commit.
+Nivel de rollback: Pontual - branch descartada e recriada.
+Resolucao (CTO): DT-015 registrada. Scripts do projeto passam a usar
+  exclusivamente bash, git e node para manipulacao de arquivos. Python nao e
+  dependencia declarada do projeto e nao pode ser assumido como disponivel.
+Status: Resolvido.

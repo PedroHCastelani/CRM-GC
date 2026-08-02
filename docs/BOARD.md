@@ -71,3 +71,15 @@ Sprint 8-10: E2E, performance, seguranca, go-live - itens 044-054.
 | DT-009 | telefone_hash SHA-256 para UNIQUE sem expor PII | Incorporada |
 | DT-010 | Cifra versionada v1 permite rotacao de algoritmo | Incorporada |
 | DT-011 | Webhook sempre responde 200 em descarte (evita retry infinito) | Incorporada |
+
+## Correcoes - Incidentes #004 e #006
+
+| # | Item | Agente | Status |
+|---|---|---|---|
+| 077 | Node 22 pinado via .nvmrc e engine-strict | Infraestrutura | Resolvido |
+| 081 | Scripts sem dependencia de Python | DevOps | Resolvido |
+
+| ID | Decisao Tecnica | Status |
+|---|---|---|
+| DT-013 | .nvmrc como fonte unica da versao do Node | Incorporada |
+| DT-015 | Scripts usam apenas bash, git e node | Incorporada |
