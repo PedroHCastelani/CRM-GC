@@ -1,12 +1,41 @@
+# ─── Credenciais ──────────────────────────────────────────
 .env
-.env.local
+.env.*
+!.env.example
+*.pem
+*.key
+qrcode.txt
+
+# ─── Dados e backups ──────────────────────────────────────
 data/
 backups/
 *.db
 *.db-shm
 *.db-wal
+
+# ─── Node ─────────────────────────────────────────────────
 node_modules/
 dist/
+build/
 coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# ─── Logs ─────────────────────────────────────────────────
 *.log
+npm-debug.log*
+
+# ─── Scripts de bootstrap gerados pelo assistente ─────────
+# Nao versionados: sao andaimes de uso unico, nao artefatos do projeto.
+bootstrap-*.sh
+finish-*.sh
+fix-*.sh
+setup-sprint-*.sh
+sprint-*.sh
+
+# ─── Sistema / editor ─────────────────────────────────────
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
