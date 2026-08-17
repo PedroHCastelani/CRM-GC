@@ -1,9 +1,10 @@
 ---
 id: CRMGC-BOARD-005
 title: Board de Gerenciamento - CRM GC
-version: 0.6.0
+version: 0.9.0
 status: ACTIVE
 owner: CTO
+last_update: 2026-08-16
 ---
 
 # CRM GC - Board de Desenvolvimento
@@ -12,74 +13,60 @@ owner: CTO
 
 | Campo | Valor |
 |---|---|
-| Sprint ativa | 3 - Message Store |
-| Itens com artefato | 24 / 60 |
-| Cobertura de testes | 4 suites, 60+ assercoes |
-| Bloqueio critico | H-05 (ENCRYPTION_KEY) para rodar local |
-| Proxima entrega | Sprint 5 - Processador + IA + Notion |
+| Sprint ativa | 8 - E2E + Performance + Seguranca |
+| Servicos implementados | 3 / 3 (Message Store, Processador, Gateway) |
+| Testes totais | 31 (MS) + 41 (Proc) + 17 (GW) = 89 testes passando |
+| Cobertura media | ~93% statements, ~83% branches |
+| Ultimo merge | PR #2 sprint-7/gateway -> master |
+| Proxima entrega | Sprint 8 - Testes E2E, performance e seguranca |
 
-## Sprint 3 - Message Store (ATUAL)
+## Sprints Concluidas
+
+| Sprint | Descricao | Status | Testes |
+|---|---|---|---|
+| 1 | Infraestrutura base, CI/CD, scripts | Concluida | — |
+| 2 | Evolution API containerizada | Concluida | — |
+| 3 | Message Store (webhook, SQLite, cipher) | Concluida | 31 testes |
+| 4 | Testes Message Store (94% coverage) | Concluida | 31 testes |
+| 5 | Processador (Gemini, Notion, batch, retry) | Concluida | 41 testes |
+| 6 | Testes Processador (94% coverage) | Concluida | 41 testes |
+| 7 | Gateway (painel web, /trigger, /status, IP filter) | Concluida | 17 testes |
+
+## Sprint 8 - E2E + Performance + Seguranca (ATUAL)
 
 | # | Item | Agente | Status |
 |---|---|---|---|
-| 013 | POST /webhook recebe payload da Evolution | Message Store | Artefato gerado |
-| 014 | Parser defensivo do contrato DT-001 | Message Store | Artefato gerado |
-| 015 | Lead criado ou reaproveitado por telefone | Message Store | Artefato gerado |
-| 016 | Idempotencia por external_id | Message Store | Artefato gerado |
-| 017 | Criptografia AES-256-GCM em repouso (RN-005) | SecOps | Artefato gerado |
-| 018 | Configuracao 100% por variavel de ambiente | SecOps | Artefato gerado |
-| 019 | GET /health com verificacao real do banco | Message Store | Artefato gerado |
-| 065 | Schema SQLite conforme 02-DOMAIN secao 7 | Message Store | Artefato gerado |
-| 066 | Auditoria de descartes (webhook_descartes) | QA | Artefato gerado |
-| 067 | Logger com redacao de PII (LGPD) | SecOps | Artefato gerado |
-| 068 | 11 cenarios Gherkin da secao 5.1 | QA | Artefato gerado |
-| 069 | Dockerfile multi-stage, usuario nao-root | Infraestrutura | Artefato gerado |
-| 070 | GET /leads/:id/conversa para o Processador | Message Store | Artefato gerado |
+| 044 | Teste E2E: lead novo -> card criado no Notion | QA | Pendente |
+| 045 | Teste E2E: lead existente -> card atualizado | QA | Pendente |
+| 046 | Teste E2E: trigger manual -> processamento | QA | Pendente |
+| 047 | Performance: batch 30 leads em < 5 min | QA | Pendente |
+| 048 | Performance: webhook P95 < 200ms | QA | Pendente |
+| 049 | Seguranca: checklist OWASP + credenciais | SecOps | Pendente |
+| 050 | Seguranca: dados sensíveis criptografados | SecOps | Pendente |
 
-## Sprints anteriores
+## Sprints Futuras
 
-Sprint 1 (infraestrutura) e Sprint 2 (Evolution API): artefatos entregues.
-Incidente #001 (pipeline): resolvido.
-
-## Backlog
-
-Sprint 5-6: Processador, IA e Notion - itens 020-035 + 024-B + 031-B.
-Sprint 7: Gateway - itens 036-043.
-Sprint 8-10: E2E, performance, seguranca, go-live - itens 044-054.
+Sprint 9: Staging — 7 dias sem falha com dados de teste.
+Sprint 10: Go-live com dados reais, monitoramento 7 dias.
 
 ## Acoes Humanas Pendentes
 
 | # | Acao | Bloqueia |
 |---|---|---|
 | H-02 | Provisionar VPS + scripts/setup-vps.sh | deploy |
-| H-03 | API Key Gemini | Sprint 5 |
-| H-04 | Notion Internal Integration | Sprint 5 |
-| H-05 | Gerar ENCRYPTION_KEY no .env | rodar local |
-| H-06 | Escanear QR Code | teste com WhatsApp real |
+| H-05 | Gerar ENCRYPTION_KEY no .env local | rodar local |
+| H-06 | Escanear QR Code (Evolution API) | teste com WhatsApp real |
 | H-07 | GitHub Environments > production > Required reviewers | item 052 |
 
 ## Decisoes Tecnicas
 
 | ID | Assunto | Status |
 |---|---|---|
-| DT-001 | Payload real Evolution API v2 | Incorporada |
+| DT-001 | Payload real Evolution API v2 (pushName null, @lid) | Incorporada |
+| DT-002 | Gemini schema sem union types + responseMimeType json | Incorporada |
+| DT-003 | Notion API v1 suporta todas operacoes necessarias | Incorporada |
 | DT-004 | Board em Markdown | Incorporada |
-| DT-005 | Processador expoe GET /status | Incorporada |
-| DT-006 | Interface AIProvider com adapters | Incorporada |
-| DT-007 | groupsIgnore e readMessages false | Incorporada |
-| DT-008 | CI descobre servicos dinamicamente | Incorporada |
 | DT-009 | telefone_hash SHA-256 para UNIQUE sem expor PII | Incorporada |
 | DT-010 | Cifra versionada v1 permite rotacao de algoritmo | Incorporada |
-| DT-011 | Webhook sempre responde 200 em descarte (evita retry infinito) | Incorporada |
-
-## Correcoes - Incidentes #004 e #006
-
-| # | Item | Agente | Status |
-|---|---|---|---|
-| 077 | Node 22 pinado via .nvmrc e engine-strict | Infraestrutura | Resolvido |
-| 081 | Scripts sem dependencia de Python | DevOps | Resolvido |
-
-| ID | Decisao Tecnica | Status |
-|---|---|---|
+| DT-011 | Webhook sempre responde 200 em descarte | Incorporada |
 | DT-013 | .nvmrc como fonte unica da versao do Node | Incorporada |
-| DT-015 | Scripts usam apenas bash, git e node | Incorporada |

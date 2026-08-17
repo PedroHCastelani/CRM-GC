@@ -34,37 +34,37 @@ validado pelo Agente de QA. O CTO fecha incidentes. O CEO aprova go-live.
 | 010 | QR Code conectado ao WhatsApp | Integração WhatsApp | 2 | Não iniciado | — | — |
 | 011 | Webhook disparando para o Message Store | Integração WhatsApp | 2 | Não iniciado | — | — |
 | 012 | Reconexão automática em caso de queda | Integração WhatsApp | 2 | Não iniciado | — | — |
-| 013 | Message Store: endpoint POST /webhook | Message Store | 3 | Não iniciado | — | — |
-| 014 | Message Store: parser do payload Evolution API (DT-001) | Message Store | 3 | Não iniciado | — | — |
-| 015 | Message Store: criptografia AES-256-GCM no SQLite | Message Store | 3 | Não iniciado | — | — |
-| 016 | Message Store: descartar fromMe=true e tipos não suportados | Message Store | 3 | Não iniciado | — | — |
-| 017 | Message Store: endpoint GET /health | Message Store | 3 | Não iniciado | — | — |
-| 018 | Message Store: schema SQLite conforme 02-DOMAIN seção 7 | Message Store | 3 | Não iniciado | — | — |
-| 019 | Cenários Gherkin 5.1 escritos antes do código | QA | 3 | Não iniciado | — | — |
-| 020 | Automação dos cenários Gherkin 5.1 | QA | 4 | Não iniciado | — | — |
-| 021 | Cobertura ≥ 80% no Message Store | QA | 4 | Não iniciado | — | — |
-| 022 | Processador: leitura de mensagens não processadas do SQLite | Processador | 5 | Não iniciado | — | — |
-| 023 | Processador: agrupamento de mensagens por lead | Processador | 5 | Não iniciado | — | — |
-| 024 | Processador: chamada ao Gemini com schema correto (DT-002) | Processador | 5 | Não iniciado | — | — |
-| 025 | Processador: retry 4x com delay de 30.000ms | Processador | 5 | Não iniciado | — | — |
-| 026 | Processador: atualização de cards no Notion | Processador | 5 | Não iniciado | — | — |
-| 027 | Processador: não sobrescreve campos com string vazia (RN-004) | Processador | 5 | Não iniciado | — | — |
-| 028 | Processador: não regride estágio do lead | Processador | 5 | Não iniciado | — | — |
-| 029 | Processador: log de auditoria por operação (RN-007) | Processador | 5 | Não iniciado | — | — |
-| 030 | Processador: cron às 02h configurável via BATCH_CRON | Processador | 5 | Não iniciado | — | — |
-| 031 | Processador: endpoint POST /run | Processador | 5 | Não iniciado | — | — |
-| 032 | Cenários Gherkin 5.2 escritos antes do código | QA | 5 | Não iniciado | — | — |
-| 033 | Automação dos cenários Gherkin 5.2 | QA | 6 | Não iniciado | — | — |
-| 034 | Testes de integração Processador ↔ Notion | QA | 6 | Não iniciado | — | — |
-| 035 | Cobertura ≥ 80% no Processador | QA | 6 | Não iniciado | — | — |
-| 036 | Gateway: painel web GET / com botão e área de status | Gateway | 7 | Não iniciado | — | — |
-| 037 | Gateway: endpoint POST /trigger | Gateway | 7 | Não iniciado | — | — |
-| 038 | Gateway: endpoint GET /status | Gateway | 7 | Não iniciado | — | — |
-| 039 | Gateway: controle de acesso por IP | Gateway | 7 | Não iniciado | — | — |
-| 040 | Gateway: erro legível quando Processador indisponível | Gateway | 7 | Não iniciado | — | — |
-| 041 | Cenários Gherkin 5.3 escritos antes do código | QA | 7 | Não iniciado | — | — |
-| 042 | Automação dos cenários Gherkin 5.3 | QA | 7 | Não iniciado | — | — |
-| 043 | Cobertura ≥ 80% no Gateway | QA | 7 | Não iniciado | — | — |
+| 013 | Message Store: endpoint POST /webhook | Message Store | 3 | ✅ Concluído | QA | CTO |
+| 014 | Message Store: parser do payload Evolution API (DT-001) | Message Store | 3 | ✅ Concluído | QA | CTO |
+| 015 | Message Store: criptografia AES-256-GCM no SQLite | Message Store | 3 | ✅ Concluído | QA | CTO |
+| 016 | Message Store: descartar fromMe=true e tipos não suportados | Message Store | 3 | ✅ Concluído | QA | CTO |
+| 017 | Message Store: endpoint GET /health | Message Store | 3 | ✅ Concluído | QA | CTO |
+| 018 | Message Store: schema SQLite conforme 02-DOMAIN seção 7 | Message Store | 3 | ✅ Concluído | QA | CTO |
+| 019 | Cenários Gherkin 5.1 escritos antes do código | QA | 3 | ✅ Concluído | QA | CTO |
+| 020 | Automação dos cenários Gherkin 5.1 | QA | 4 | ✅ Concluído (31 testes, 94.64%) | QA | CTO |
+| 021 | Cobertura ≥ 80% no Message Store | QA | 4 | ✅ Concluído (94.64%) | QA | CTO |
+| 022 | Processador: leitura de mensagens não processadas do SQLite | Processador | 5 | ✅ Concluído | QA | CTO |
+| 023 | Processador: agrupamento de mensagens por lead | Processador | 5 | ✅ Concluído | QA | CTO |
+| 024 | Processador: chamada ao Gemini com schema correto (DT-002) | Processador | 5 | ✅ Concluído | QA | CTO |
+| 025 | Processador: retry 4x com delay de 30.000ms | Processador | 5 | ✅ Concluído | QA | CTO |
+| 026 | Processador: atualização de cards no Notion | Processador | 5 | ✅ Concluído | QA | CTO |
+| 027 | Processador: não sobrescreve campos com string vazia (RN-004) | Processador | 5 | ✅ Concluído | QA | CTO |
+| 028 | Processador: não regride estágio do lead | Processador | 5 | ✅ Concluído | QA | CTO |
+| 029 | Processador: log de auditoria por operação (RN-007) | Processador | 5 | ✅ Concluído | QA | CTO |
+| 030 | Processador: cron às 02h configurável via BATCH_CRON | Processador | 5 | ✅ Concluído | QA | CTO |
+| 031 | Processador: endpoint POST /run | Processador | 5 | ✅ Concluído | QA | CTO |
+| 032 | Cenários Gherkin 5.2 escritos antes do código | QA | 5 | ✅ Concluído | QA | CTO |
+| 033 | Automação dos cenários Gherkin 5.2 | QA | 6 | ✅ Concluído (41 testes, 94.11%) | QA | CTO |
+| 034 | Testes de integração Processador ↔ Notion | QA | 6 | ✅ Concluído | QA | CTO |
+| 035 | Cobertura ≥ 80% no Processador | QA | 6 | ✅ Concluído (94.11%) | QA | CTO |
+| 036 | Gateway: painel web GET / com botão e área de status | Gateway | 7 | ✅ Concluído | QA | CTO |
+| 037 | Gateway: endpoint POST /trigger | Gateway | 7 | ✅ Concluído | QA | CTO |
+| 038 | Gateway: endpoint GET /status | Gateway | 7 | ✅ Concluído | QA | CTO |
+| 039 | Gateway: controle de acesso por IP | Gateway | 7 | ✅ Concluído | QA | CTO |
+| 040 | Gateway: erro legível quando Processador indisponível | Gateway | 7 | ✅ Concluído | QA | CTO |
+| 041 | Cenários Gherkin 5.3 escritos antes do código | QA | 7 | ✅ Concluído | QA | CTO |
+| 042 | Automação dos cenários Gherkin 5.3 | QA | 7 | ✅ Concluído (17 testes, 100%) | QA | CTO |
+| 043 | Cobertura ≥ 80% no Gateway | QA | 7 | ✅ Concluído (100% stmt, 96.96% branch) | QA | CTO |
 | 044 | Testes end-to-end: lead novo → card criado no Notion | QA | 8 | Não iniciado | — | — |
 | 045 | Testes end-to-end: lead existente → card atualizado | QA | 8 | Não iniciado | — | — |
 | 046 | Testes end-to-end: trigger manual → processamento iniciado | QA | 8 | Não iniciado | — | — |
