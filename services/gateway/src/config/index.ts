@@ -9,7 +9,7 @@ export interface Config {
 export function loadConfig(): Config {
   const allowedRaw = process.env.ALLOWED_IPS ?? '127.0.0.1';
   return {
-    port: Number(process.env.PORT ?? 3003),
+    port: Number(process.env.PORT ?? 3000),
     sqlitePath: process.env.SQLITE_PATH ?? '/data/crm.db',
     processadorUrl: process.env.PROCESSADOR_URL ?? 'http://processador:3002',
     allowedIps: allowedRaw.split(',').map(ip => ip.trim()).filter(Boolean),

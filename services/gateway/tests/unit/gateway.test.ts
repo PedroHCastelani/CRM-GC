@@ -171,7 +171,7 @@ describe('loadConfig', () => {
   it('deve carregar defaults quando variáveis não definidas', async () => {
     const { loadConfig } = await import('../../src/config/index.js');
     const cfg = loadConfig();
-    expect(cfg.port).toBe(3003);
+    expect(cfg.port).toBe(3000);
     expect(cfg.allowedIps).toContain('127.0.0.1');
     expect(cfg.processadorUrl).toBe('http://processador:3002');
   });
