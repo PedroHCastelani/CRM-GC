@@ -29,11 +29,11 @@ export function loadConfig(): Config {
     encryptionKey: Buffer.from(raw, 'hex'),
     logLevel: process.env.LOG_LEVEL ?? 'info',
     batchCron: process.env.BATCH_CRON ?? '0 2 * * *',
-    iaRetryMax: Number(process.env.IA_RETRY_MAX ?? 4),
-    iaRetryDelayMs: Number(process.env.IA_RETRY_DELAY_MS ?? 30000),
+    iaRetryMax: Number(process.env.RETRY_MAX_ATTEMPTS ?? process.env.IA_RETRY_MAX ?? 4),
+    iaRetryDelayMs: Number(process.env.RETRY_DELAY_MS ?? process.env.IA_RETRY_DELAY_MS ?? 30000),
     geminiApiKey: requireEnv('GEMINI_API_KEY'),
-    geminiModel: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-lite',
+    geminiModel: process.env.AI_MODEL ?? process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-lite',
     notionToken: requireEnv('NOTION_TOKEN'),
-    notionDbLeadsId: requireEnv('NOTION_DATABASE_LEADS_ID'),
+    notionDbLeadsId: process.env.NOTION_DB_LEADS ?? requireEnv('NOTION_DATABASE_LEADS_ID'),
   };
 }
